@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  passwordHash   String
+  fullName       String?
+  authProvider   AuthProvider @default(email)
+  googleId       String?      @unique
+  createdAt      DateTime     @default(now())
+  enrollments    Enrollment[]
+
+  // 🔽 Add these for forgot password support
+  resetOTP       String?      // One-time password for reset
+  otpExpiry      DateTime?    // When the OTP expires
+}
+
+model Course {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String
+  price        Int // stored in paise
+  durationDays Int
+  enrollments  Enrollment[]
+  syllabus     SyllabusItem[]
+}
+
+model Enrollment {
+  id           String           @id @default(uuid())
+  user         User             @relation(fields: [userId], references: [id])
+  userId       String
+  course       Course           @relation(fields: [courseId], references: [id])
+  courseId     Int
+  purchaseDate DateTime         @default(now())
+  startDate    DateTime
+  planType     PlanType
+  status       EnrollmentStatus @default(pending_setup)
+  paymentId    String
+  progress     TaskProgress[]
+}
+
+model SyllabusItem {
+  id        Int    @id @default(autoincrement())
+  course    Course @relation(fields: [courseId], references: [id])
+  courseId  Int
+  dayNumber Int
+  itemId    Int // FK to content_items.id
+  itemType  String
+  itemOrder Int
+
+  progress TaskProgress[]
+}
+
+model ContentItem {
+  id                 Int                @id @default(autoincrement())
+  title              String
+  contentType        ContentType
+  contentBody        Json
+  languageFluencyTag LanguageFluencyTag
+}
+
+model TaskProgress {
+  id               Int          @id @default(autoincrement())
+  enrollment       Enrollment   @relation(fields: [enrollmentId], references: [id])
+  enrollmentId     String
+  syllabusItem     SyllabusItem @relation(fields: [syllabusItemId], references: [id])
+  syllabusItemId   Int
+  status           TaskStatus   @default(pending)
+  timeSpentSeconds Int          @default(0)
+  completedAt      DateTime?
+  assignedDate     DateTime
+}
+
+enum PlanType {
+  weekday_centric
+  weekend_centric
+}
+
+enum EnrollmentStatus {
+  pending_setup
+  active
+  completed
+  expired
+}
+
+enum TaskStatus {
+  pending
+  in_progress
+  completed
+  backlogged
+}
+
+enum AuthProvider {
+  email
+  google
+}
+
+enum ContentType {
+  article
+  problem
+}
+
+enum LanguageFluencyTag {
+  java
+  cpp
+  python
+  all
+}
