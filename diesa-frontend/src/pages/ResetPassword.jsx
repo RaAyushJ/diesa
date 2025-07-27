@@ -1,42 +1,42 @@
-import { useState } from 'react';
-import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
+// src/pages/ResetPassword.jsx
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
 
 function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [status, setStatus] = useState({ error: '', success: '' });
   const navigate = useNavigate();
-  const email = localStorage.getItem('resetEmail');
+
+  useEffect(() => {
+    // Supabase automatically detects password recovery token from URL and sets session
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        setStatus({ error: 'Invalid or expired link. Please request again.', success: '' });
+      }
+    };
+    checkSession();
+  }, []);
 
   const handleReset = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setStatus({ error: '', success: '' });
 
     if (password !== confirm) {
-      setError('Passwords do not match');
+      setStatus({ error: 'Passwords do not match', success: '' });
       return;
     }
 
-    try {
-      const res = await fetch('http://localhost:8000/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, newPassword: password })
-      });
+    const { error } = await supabase.auth.updateUser({ password });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || 'Failed to reset password');
-      } else {
-        setSuccess('Password reset successfully!');
-        setTimeout(() => navigate('/login'), 2000);
-      }
-    } catch (err) {
-      setError('Something went wrong');
+    if (error) {
+      setStatus({ error: error.message, success: '' });
+    } else {
+      setStatus({ success: 'Password updated! Redirecting...', error: '' });
+      setTimeout(() => navigate('/login'), 2000);
     }
   };
 
@@ -44,8 +44,8 @@ function ResetPassword() {
     <Container className="d-flex justify-content-center align-items-center min-vh-100">
       <Card className="p-4 shadow bg-dark text-white" style={{ width: '24rem' }}>
         <h4 className="mb-3 text-center">Reset Password</h4>
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
+        {status.error && <Alert variant="danger">{status.error}</Alert>}
+        {status.success && <Alert variant="success">{status.success}</Alert>}
         <Form onSubmit={handleReset}>
           <Form.Group className="mb-3">
             <Form.Label>New Password</Form.Label>
@@ -61,7 +61,7 @@ function ResetPassword() {
             <Form.Label>Confirm Password</Form.Label>
             <Form.Control
               type="password"
-              placeholder="Re-enter new password"
+              placeholder="Re-enter password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required

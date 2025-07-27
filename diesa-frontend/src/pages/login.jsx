@@ -1,7 +1,7 @@
-// src/pages/Login.jsx
 import { useState } from 'react';
 import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -13,26 +13,16 @@ function Login() {
     e.preventDefault();
     setError('');
 
-    try {
-      const response = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Login failed');
-      } else {
-        localStorage.setItem('token', data.token); // Store JWT or auth token
-        navigate('/pledge'); // ✅ Go to pledge screen
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Something went wrong. Try again.');
+    if (error) {
+      setError(error.message);
+    } else {
+      // ✅ User is signed in
+      navigate('/pledge');
     }
   };
 
@@ -64,12 +54,22 @@ function Login() {
             />
           </Form.Group>
 
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <Link to="/forgot-password" style={{ color: 'orange' }}>
+              Forgot Password?
+            </Link>
+          </div>
+
           <Button variant="warning" type="submit" className="w-100">
             Login
           </Button>
         </Form>
+
         <p className="text-center mt-3">
-          Don't have an account? <a href="#" style={{ color: 'orange' }}>Register</a>
+          Don't have an account?{' '}
+          <Link to="/register" style={{ color: 'orange' }}>
+            Register
+          </Link>
         </p>
       </Card>
     </div>

@@ -1,7 +1,11 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-const jwt = require("jsonwebtoken");
-const { hashPassword, comparePassword } = require("../utils/hash");
+require("dotenv").config();
+const { createClient } = require('@supabase/supabase-js');
+
+// Supabase client initialization
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 // ----------------------------
 // REGISTER
@@ -10,42 +14,26 @@ async function registerUser(req, res) {
   const { email, password, fullName } = req.body;
 
   try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    // Sign up the user using Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { fullName } // stores in user_metadata
+      }
+    });
 
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists." });
+    if (error) {
+      return res.status(400).json({ message: error.message });
     }
 
-    const passwordHash = await hashPassword(password);
-
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        fullName,
-        authProvider: "email",
-      },
-    });
-
-    const token = jwt.sign(
-      { userId: newUser.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
     res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        fullName: newUser.fullName
-      },
-      token
+      message: 'User registered. Please check your email to confirm.',
+      user: data.user
     });
-
   } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Register Error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 }
 
@@ -56,41 +44,53 @@ async function login(req, res) {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials." });
-    }
-
-    const isMatch = await comparePassword(password, user.passwordHash);
-
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials." });
-    }
-
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName
-      },
-      token
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     });
 
+    if (error) {
+      return res.status(401).json({ message: error.message });
+    }
+
+    res.status(200).json({
+      message: 'Login successful',
+      user: data.user,
+      session: data.session // contains access_token, refresh_token, etc.
+    });
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Login Error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 }
 
+// ----------------------------
+// FORGOT PASSWORD
+// ----------------------------
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'http://localhost:3000/reset-password' // change to your frontend URL
+    });
+
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    res.status(200).json({
+      message: 'Password reset email sent'
+    });
+  } catch (err) {
+    console.error('Forgot Password Error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+
 module.exports = {
   registerUser,
-  login
+  login,
+  forgotPassword
 };

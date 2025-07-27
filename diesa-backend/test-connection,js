@@ -1,0 +1,30 @@
+// test-connection.js
+const { Client } = require('pg');
+
+// IMPORTANT: Paste your FULL connection pooler URL from Supabase in the quotes below.
+// Use a NEW, SIMPLE password with no special characters for this test.
+const connectionString = "postgresql://postgres.qpaiayzvygktmmbivkts:Test123ijklnugtfthgv@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require";
+
+const client = new Client({
+    connectionString: connectionString,
+});
+
+async function testConnection() {
+    console.log("Attempting to connect to the database...");
+    try {
+        await client.connect();
+        console.log("\n✅ ✅ ✅ SUCCESS! ✅ ✅ ✅");
+        console.log("The connection to the database was successful.");
+        console.log("This means your network is OK and your password is correct.");
+        console.log("The problem is likely a small typo in your .env file. Please double-check it.");
+    } catch (err) {
+        console.error("\n❌ ❌ ❌ CONNECTION FAILED ❌ ❌ ❌");
+        console.error("The script could not connect to the database.");
+        console.error("This almost certainly means a firewall, antivirus, or network provider is blocking the connection.");
+        console.error("Error details:", err.message);
+    } finally {
+        await client.end();
+    }
+}
+
+testConnection();

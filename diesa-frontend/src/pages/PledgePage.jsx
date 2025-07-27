@@ -1,22 +1,32 @@
 // src/pages/PledgePage.jsx
-import React from 'react';
-import { Container, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { Button, Card } from 'react-bootstrap';
 
 function PledgePage() {
   const navigate = useNavigate();
 
-  const handleContinue = () => {
-    // This is the corrected line
-    navigate('/select');
+  const handleAgree = () => {
+    navigate('/dashboard'); // ✅ Proceed to main app
   };
 
   return (
-    <Container fluid className="d-flex flex-column justify-content-center align-items-center vh-100 bg-dark text-white">
-      <h1 className="mb-4 text-center">"This is your time. Own it. Conquer your 30-day goal."</h1>
-      <p className="lead text-center">I pledge to stay committed and focused to complete my goal in the next 30 days.</p>
-      <Button className="mt-4" variant="light" onClick={handleContinue}>Continue</Button>
-    </Container>
+    <div className="bg-dark text-white min-vh-100 d-flex justify-content-center align-items-center">
+      <Card className="p-5 bg-secondary shadow" style={{ width: '34rem' }}>
+        <h3 className="text-center mb-4">🚀 The 30-Day Challenge</h3>
+        <p>
+          By clicking "I Agree", you pledge to:
+        </p>
+        <ul>
+          <li>Practice daily for the next 30 days</li>
+          <li>Stay committed and track your progress</li>
+          <li>Complete the syllabus honestly</li>
+        </ul>
+        <p className="text-center mt-4">Let's do this together 💪</p>
+        <Button variant="warning" className="w-100 mt-3" onClick={handleAgree}>
+          I Agree & Begin
+        </Button>
+      </Card>
+    </div>
   );
 }
 

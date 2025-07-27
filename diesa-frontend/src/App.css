@@ -1,3 +1,13 @@
+/* General Reset + Theming */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0f0f0f;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Root container */
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -5,6 +15,7 @@
   text-align: center;
 }
 
+/* Logo styling */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -18,6 +29,7 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Logo spin animation */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -33,10 +45,31 @@
   }
 }
 
+/* Reusable card */
 .card {
   padding: 2em;
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  margin-bottom: 2rem;
 }
 
+/* Text utility */
 .read-the-docs {
   color: #888;
+}
+
+/* Button styling (if you want global btn style) */
+button {
+  border-radius: 8px;
+  border: none;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  background-color: #ff7a00;
+  color: white;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #ffa947;
 }

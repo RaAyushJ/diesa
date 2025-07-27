@@ -1,0 +1,60 @@
+/* src/pages/Home.css - REVISED */
+
+/* Main container with the CORRECT HORIZONTAL split-color background */
+.home-container {
+  display: flex;
+  justify-content: center; /* This centers the card horizontally */
+  align-items: center;    /* This centers the card vertically */
+  min-height: 100vh;
+  /* Horizontal split (top-to-bottom) using your main color and a complementary blue */
+  background: linear-gradient(180deg, #001a33 50%, #004280 50%);
+  padding: 2rem;
+  overflow: hidden;
+}
+
+/* The card with a light indigo background and WHITE text */
+.home-card {
+  /* Using a light indigo/slate blue from your color palette */
+  background-color: #586F8A; 
+  border: none;
+  border-radius: 20px;
+  color: #FFFFFF; /* << THIS FIXES THE TEXT COLOR, MAKING IT WHITE */
+  width: 30rem;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+/* Styling for the main heading */
+.home-card h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Styling for the descriptive paragraphs */
+.home-card p {
+  font-size: 1.1rem;
+  color: #E0E0E0; /* A soft white for the paragraphs */
+  margin-bottom: 1.5rem;
+}
+
+/* The stylish, interactive button matching the theme */
+.home-buy-btn {
+  /* Using the darkest blue from your palette for the button */
+  background-color: #0d2c4f;
+  border: 1px solid #586F8A; /* Border matches the card color */
+  color: #FFFFFF;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 0.8rem 2.5rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect for the button */
+.home-buy-btn:hover {
+  background-color: #001a33; /* Darkens to the main background color on hover */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}

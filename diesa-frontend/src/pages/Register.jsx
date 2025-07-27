@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Container, Form, Button, Card, Alert, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { Container, Form, Button, Card, Alert, InputGroup } from 'react-bootstrap';
+import { supabase } from '../supabaseClient'; // ✅ Import Supabase
 
 function Register() {
   const [fullName, setFullName] = useState('');
@@ -13,7 +14,6 @@ function Register() {
   const [success, setSuccess] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -26,24 +26,23 @@ function Register() {
       return;
     }
 
-    try {
-      const res = await fetch('http://localhost:8000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || 'Registration failed');
-      } else {
-        setSuccess('Registered successfully! Redirecting to login...');
-        setTimeout(() => navigate('/login'), 2000);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          fullName,
+          username,
+          gradYear,
+        }
       }
-    } catch (err) {
-      console.error(err);
-      setError('Something went wrong');
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess('Check your email to confirm your account');
+      setTimeout(() => navigate('/login'), 2500);
     }
   };
 
@@ -51,13 +50,11 @@ function Register() {
     <div className="bg-black text-white min-vh-100 d-flex justify-content-center align-items-center">
       <Card style={{ width: '26rem', backgroundColor: '#121212' }} className="p-4 shadow-lg">
         <div className="text-center mb-3">
-          <Button variant="light" className="w-100 mb-2">
+          <Button variant="light" className="w-100 mb-2" disabled>
             <img src="https://developers.google.com/identity/images/g-logo.png" alt="G" width="20" className="me-2" />
-            Sign in with Google
+            Sign in with Google (Coming Soon)
           </Button>
-          <div className="text-muted mb-3">
-            <hr /> Or <hr />
-          </div>
+          <div className="text-muted mb-3"><hr /> Or <hr /></div>
         </div>
 
         {error && <Alert variant="danger">{error}</Alert>}
@@ -65,25 +62,11 @@ function Register() {
 
         <Form onSubmit={handleRegister}>
           <Form.Group className="mb-3">
-            <Form.Control
-              type="text"
-              placeholder="Full Name"
-              className="bg-warning-subtle"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
+            <Form.Control type="text" placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Control
-              type="text"
-              placeholder="Username"
-              className="bg-warning-subtle"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+            <Form.Control type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -124,16 +107,11 @@ function Register() {
               <Form.Control
                 type={showPass ? 'text' : 'password'}
                 placeholder="Password"
-                className="bg-dark text-white border-dark"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowPass(!showPass)}
-                style={{ color: 'white' }}
-              >
+              <Button variant="outline-secondary" onClick={() => setShowPass(!showPass)} style={{ color: 'white' }}>
                 {showPass ? '🙈' : '👁️'}
               </Button>
             </InputGroup>
@@ -145,23 +123,18 @@ function Register() {
               <Form.Control
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Confirm Password"
-                className="bg-dark text-white border-dark"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowConfirm(!showConfirm)}
-                style={{ color: 'white' }}
-              >
+              <Button variant="outline-secondary" onClick={() => setShowConfirm(!showConfirm)} style={{ color: 'white' }}>
                 {showConfirm ? '🙈' : '👁️'}
               </Button>
             </InputGroup>
           </Form.Group>
 
           <Button type="submit" className="w-100" style={{ backgroundColor: '#ff7a00', border: 'none' }}>
-            Verify and Sign up
+            Register
           </Button>
         </Form>
 
